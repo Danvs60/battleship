@@ -2,7 +2,7 @@
 
 ## Overview
 Battleship is a 1v1 strategy guessing game where players aim to sink their opponent's ships. This version includes traditional features with tweaks for a more fast-paced experience.
-For the purposes of this take-home test, a GUI implementation is not provided and adjustments will need to be made to account for a more limited test environment.
+For the purposes of this take-home test, a GUI implementation is not provided and adjustments were made to account for a more limited test environment.
 
 ## Game Rules and Mechanics
 - **Objective**: Sink all of your opponent's ships.
