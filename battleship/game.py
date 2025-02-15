@@ -13,15 +13,16 @@ class Orientation(Enum):
     HORIZONTAL = 2
 
 class Player():
-    def __init__(self, name):
+    def __init__(self, name, cpu = False):
         self.name = name
+        self.cpu = cpu
         self.score = 0
 
 class BattleshipGame:
 
     def __init__(self):
         self.current_player = Player("Player1")
-        self.waiting_player = Player("Player2")
+        self.waiting_player = Player("Player2", cpu = True)
         self.board_size = 10
         self.boards = self.create_boards()
         self.ships = self.initialize_ships()
@@ -164,35 +165,47 @@ class BattleshipGame:
         while True:
             print(f"It's {self.current_player.name}'s turn. Please enter your guess.")
 
-            self.display_board(self.waiting_player)
+            if not self.current_player.cpu:
+                self.display_board(self.current_player, hide_ships=False)
+                self.display_board(self.waiting_player)
 
-            col = self.get_col_input()
-            row = self.get_row_input() - 1
-
-            if not self.check_valid_guess(row, col, self.waiting_player):
-                print("You have already tried that, Captain! Please pick a valid coordinate to hit.")
-                continue
-
-            print("Launching attack...")
-            sleep(1.4) # the suspense!
-
-            if self.check_hit(row, col, self.waiting_player):
-                print("SUCCESS!!")
-                self.current_player.score += 1
-
-                self.boards[self.waiting_player][row][col] = CoordinateState.HIT
-                if self.check_winner():
-                    break;
-                # player hits, so turn continues until they miss
+            col, row = 0, 0
+            if self.current_player.cpu:
+                col = random.randint(0, self.board_size - 1)
+                row = random.randint(0, self.board_size - 1)
+                while not self.check_valid_guess(row, col, self.waiting_player):
+                    col = random.randint(0, self.board_size - 1)
+                    row = random.randint(0, self.board_size - 1)
             else:
-                print("MISS!!")
-                self.boards[self.waiting_player][row][col] = CoordinateState.MISS
-                self.current_player, self.waiting_player = self.waiting_player, self.current_player # next turn
+                col = self.get_col_input()
+                row = self.get_row_input() - 1
+                if not self.check_valid_guess(row, col, self.waiting_player):
+                    print("You have already tried that, Captain! Please, pick a valid coordinate to hit.")
+                    continue
+
+            self.hit(row, col, self.waiting_player)
+
+            if self.check_winner():
+                break;
 
         print(f"Congratulations {self.current_player.name}, YOU WIN!")
         for player in self.get_players():
             self.display_board(player, hide_ships=False)
 
+    def hit(self, row, col, player_to_hit):
+        print("Launching attack...")
+        sleep(0.5) # the suspense!
+
+        if self.check_hit(row, col, self.waiting_player):
+            print("SUCCESS!!")
+            self.current_player.score += 1
+            self.boards[self.waiting_player][row][col] = CoordinateState.HIT
+            # player successfully hits, so turn continues
+        else:
+            print("MISS!!")
+            self.boards[self.waiting_player][row][col] = CoordinateState.MISS
+            # next turn
+            self.current_player, self.waiting_player = self.waiting_player, self.current_player
 
     def get_row_input(self):
             error_message = "Only whole numbers between 1 and 10 are allowed"
